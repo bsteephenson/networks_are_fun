@@ -10,10 +10,11 @@ using namespace std;
 template<class T>
 Network<T>::Network(int tick_rate, int drop_rate, int max_delay) :
 	time(0),
+	stop(false),
 	drop_rate(drop_rate),
 	max_delay(max_delay),
 	time_increment_thread([this, tick_rate](){
-		while(true) {
+		while(!stop) {
 			this->m.lock();
 			this->time++;
 			this->time_ticked.notify_all();
@@ -26,6 +27,7 @@ Network<T>::Network(int tick_rate, int drop_rate, int max_delay) :
 
 template<class T>
 Network<T>::~Network() {
+	stop = true;
 	this->time_increment_thread.join();
 }
 
@@ -46,8 +48,8 @@ void Network<T>::send_message(string recipient, T message) {
 }
 
 template<class T>
-string Network<T>::wait_for_message(string recipient) {
-	while(true) {
+bool Network<T>::wait_for_message(string recipient, int timeout, T* message) {
+	while(timeout > 0) {
 		unique_lock<mutex> lock(m);
 		time_ticked.wait(lock);
 		// if my mailbox isnt empty
@@ -56,13 +58,15 @@ string Network<T>::wait_for_message(string recipient) {
 			auto num_message = this->mailboxes[recipient].top();
 			// if that message's timestamp is before now, it has "arrived"
 			if (get<0>(num_message) <= this->time) {
-				T message = get<1>(num_message);
+				*message = get<1>(num_message);
 				this->mailboxes[recipient].pop();
-				this->m.unlock();
-				return message;
+				return true;
 			}
 		}
+		timeout--;
+
 	}
+	return false;
 }
 
 template class Network<string>;

@@ -18,8 +18,9 @@ void machine1(Network<string>* network) {
 }
 
 void machine2(Network<string>* network) {
-	while(true) {
-		cout << network->wait_for_message("machine2") << endl;
+	string s;
+	while(network->wait_for_message("machine2", 400, &s)) {
+		cout << s << endl;
 	}
 }
 

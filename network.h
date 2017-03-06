@@ -18,13 +18,15 @@ public:
 	Network(int tick_rate, int drop_rate, int max_delay);
 	~Network();
 	void send_message(std::string recipient, T message);
-	std::string wait_for_message(std::string recipient);
+	bool wait_for_message(std::string recipient, int timeout, T* message);
 private:
 	std::mutex m;
 	std::condition_variable time_ticked;
 	int time;
 	int drop_rate;
 	int max_delay;
+
+	bool stop;
 
 	std::thread time_increment_thread;
 
