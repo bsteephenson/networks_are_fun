@@ -6,18 +6,29 @@
 #include <tuple>
 #include <queue>
 #include <mutex>
+#include <condition_variable>
+#include <thread>
 
+template<class T>
 class Network {
 public:
-	Network() {
-		time = 0;
-	}
-	void send_message(std::string recipient, std::string message);
+	// tick_rate is milliseconds it takes to increment the clock
+	// drop_rate is the percent of messages dropped
+	// max_delay is the max number of ticks a message takes to arrive
+	Network(int tick_rate, int drop_rate, int max_delay);
+	~Network();
+	void send_message(std::string recipient, T message);
 	std::string wait_for_message(std::string recipient);
 private:
 	std::mutex m;
-	std::map<std::string, std::priority_queue<std::tuple<int, std::string>, std::vector<std::tuple<int, std::string>>,  std::greater<std::tuple<int, std::string>>>> mailboxes;
+	std::condition_variable time_ticked;
 	int time;
+	int drop_rate;
+	int max_delay;
+
+	std::thread time_increment_thread;
+
+	std::map<std::string, std::priority_queue<std::tuple<int, T>, std::vector<std::tuple<int, T>>,  std::greater<std::tuple<int, T>>>> mailboxes;
 };
 
 #endif
