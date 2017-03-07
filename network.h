@@ -10,6 +10,14 @@
 #include <thread>
 
 template<class T>
+class CompareTuples {
+public:
+	bool operator()(std::tuple<int, T> t1, std::tuple<int, T> t2) {
+		return std::get<0>(t1) > std::get<0>(t2);		
+	}
+};
+
+template<class T>
 class Network {
 public:
 	// tick_rate is milliseconds it takes to increment the clock
@@ -30,7 +38,7 @@ private:
 
 	std::thread time_increment_thread;
 
-	std::map<std::string, std::priority_queue<std::tuple<int, T>, std::vector<std::tuple<int, T>>,  std::greater<std::tuple<int, T>>>> mailboxes;
+	std::map<std::string, std::priority_queue<std::tuple<int, T>, std::vector<std::tuple<int, T>>,  CompareTuples<T>>> mailboxes;
 };
 
 #endif

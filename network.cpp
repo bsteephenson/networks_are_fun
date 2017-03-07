@@ -40,6 +40,8 @@ void Network<T>::send_message(string recipient, T message) {
 		return;
 	}
 
+	cout << "sending message to " <<  recipient <<  endl;
+
 	this->m.lock();
 	int t = this->time + delay;
 	this->mailboxes[recipient].push(make_tuple(t, message));
@@ -49,7 +51,7 @@ void Network<T>::send_message(string recipient, T message) {
 
 template<class T>
 bool Network<T>::wait_for_message(string recipient, int timeout, T* message) {
-	while(timeout > 0) {
+	while (timeout > 0) {
 		unique_lock<mutex> lock(m);
 		time_ticked.wait(lock);
 		// if my mailbox isnt empty
@@ -64,10 +66,13 @@ bool Network<T>::wait_for_message(string recipient, int timeout, T* message) {
 			}
 		}
 		timeout--;
-
 	}
 	return false;
 }
 
 template class Network<string>;
+
+#include "tcp.h"
+
+template class Network<TCP_Packet>;
 

@@ -1,1 +1,1 @@
-clang++ -pthread -std=c++11 -o run main.cpp network.cpp
+clang++ -pthread -std=c++11 -o run main.cpp network.cpp tcp.cpp
